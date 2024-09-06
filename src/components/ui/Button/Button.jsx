@@ -1,5 +1,5 @@
 import * as S from "./Button.styles.js";
-const Button = () => {
-  return <S.Button>Button</S.Button>;
+const Button = ({ handleClick, children }) => {
+  return <S.Button onClick={handleClick}>{children}</S.Button>;
 };
 export default Button;

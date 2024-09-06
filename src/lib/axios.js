@@ -1,33 +1,38 @@
-function init({ baseURL = BASE_URL, axiosOptions = { headers: {} } } = {}) {
-  api = axios.create({
-    baseURL,
-    ...axiosOptions,
-    withCredentials: true,
-  });
+import Axios from "axios";
 
-  api.interceptors.request.use(
-    (config) => {
-      const token = window.localStorage.getItem("token");
-      config.headers = config.headers || {};
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    },
-    (error) => Promise.reject(error)
-  );
+import { getBaseUrl } from "@utils/envUtils";
+const BASE_URL = getBaseUrl();
 
-  api.interceptors.response.use(
-    (response) => response,
-    (error) => {
-      if (
-        error.response &&
-        error.response.status === 401 &&
-        !error?.config?._retry
-      ) {
-        localStorage.removeItem("token");
-      }
-      return Promise.reject(error);
-    }
-  );
+function authRequestInterceptor(config) {
+  if (config.headers) {
+    config.headers.Accept = "application/json";
+  }
+
+  config.withCredentials = true;
+  return config;
 }
+
+export const api = Axios.create({
+  baseURL: BASE_URL,
+});
+
+api.interceptors.request.use(authRequestInterceptor);
+api.interceptors.response.use(
+  (response) => {
+    return response.data;
+  },
+  (error) => {
+    const message = error.response?.data?.message || error.message;
+
+    console.log({ message });
+
+    if (error.response?.status === 401) {
+      localStorage.removeItem("authToken");
+      const searchParams = new URLSearchParams();
+      const redirectTo = searchParams.get("redirectTo");
+      window.location.href = `/auth/login?redirectTo=${redirectTo}`;
+    }
+
+    return Promise.reject(error);
+  }
+);

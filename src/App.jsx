@@ -1,11 +1,10 @@
-import './App.css';
-import Login from '@pages/Login';
+import "./App.css";
+import RouteConfig from "./routes/router";
 
 function App() {
   return (
     <>
-      <h1>React Boilerplate</h1>
-      <Login />
+      <RouteConfig />
     </>
   );
 }
